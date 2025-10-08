@@ -1,26 +1,25 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, List, Any
 
-class UserCreate(BaseModel):
-    name: str
+class UserBase(BaseModel):
+    name: str = Field(...)
     email: EmailStr
-    password: str
 
-class UserLogin(BaseModel):
-    email: EmailStr
-    password: str
+class UserCreate(UserBase):
+    password: str = Field(..., min_length=6)
 
-class UserOut(BaseModel):
+class UserOut(UserBase):
     id: int
-    name: str
-    email: EmailStr
-
     class Config:
         orm_mode = True
 
 class Token(BaseModel):
     access_token: str
-    token_type: str
+    token_type: str = 'bearer'
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str = Field(...)
 
 class CategoryBase(BaseModel):
     name: str
@@ -35,10 +34,10 @@ class CategoryOut(CategoryBase):
 
 class ProductBase(BaseModel):
     name: str
-    description: Optional[str] = None
-    brand: Optional[str] = None
     image: Optional[str] = None
-    rating: Optional[float] = 0.0
+    price: Optional[float] = None
+    previous_price: Optional[float] = None
+    supermarket: Optional[str] = None
     category_id: Optional[int] = None
 
 class ProductOut(ProductBase):
@@ -46,15 +45,12 @@ class ProductOut(ProductBase):
     class Config:
         orm_mode = True
 
-class PriceIn(BaseModel):
-    supermarket: str
-    price: float
-    previous_price: Optional[float] = None
-    delivery: Optional[str] = None
+class FavoriteCreate(BaseModel):
+    product_id: int
 
 class ShoppingListCreate(BaseModel):
     name: str
-    items: List[Any] = []
+    items: Optional[List[Any]] = []
 
 class AlertCreate(BaseModel):
     product_id: int
